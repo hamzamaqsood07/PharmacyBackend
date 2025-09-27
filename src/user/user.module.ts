@@ -1,12 +1,12 @@
 /* eslint-disable prettier/prettier */
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { InvoiceModule } from 'src/invoice/invoice.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([User]),InvoiceModule],
+  imports:[TypeOrmModule.forFeature([User]),forwardRef(()=>InvoiceModule)],
   controllers: [UserController],
   exports:[TypeOrmModule]
 })

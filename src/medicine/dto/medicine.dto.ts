@@ -1,8 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { IsNumber, IsString } from "class-validator"
 
-/* eslint-disable prettier/prettier */
-export class CreateMedicineDto {
+export class MedicineDto {
     @IsString()
     name:string
 

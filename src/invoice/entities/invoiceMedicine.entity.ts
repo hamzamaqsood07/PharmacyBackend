@@ -1,31 +1,36 @@
 /* eslint-disable prettier/prettier */
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Invoice } from "./invoice.entity";
-import { Medicine } from "src/medicine/entities/medicine.entity";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Invoice } from './invoice.entity';
+import { Medicine } from 'src/medicine/entities/medicine.entity';
 
 @Entity()
 export class InvoiceMedicine {
-    @PrimaryGeneratedColumn("uuid")
-    id:string
+  @PrimaryColumn('uuid')
+  invoiceId: string;
 
-    @Column()
-    qty:number
+  @PrimaryColumn('uuid')
+  medicineId: string;
 
-    @Column()
-    salesPrice:number
+  @ManyToOne(() => Invoice, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'invoiceId' })
+  invoice: Invoice;
 
-    @Column()
-    purchasePrice:number
+  @ManyToOne(() => Medicine, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'medicineId' })
+  medicine: Medicine;
 
-    @ManyToOne(()=>Invoice)
-    invoice:Invoice
+  @Column()
+  qty: number;
 
-    @ManyToOne(()=>Medicine)
-    medicine:Medicine
+  @Column()
+  salesPrice: number;
 
-    @Column({type:'timestamp',default:()=>"NOW()"})
-    createdAt:Date
+  @Column()
+  purchasePrice: number;
 
-    @Column({type:'timestamp',default:()=>"NOW()",onUpdate:"NOW()"})
-    updatedAt:Date
+  @Column({ type: 'timestamp', default: () => 'NOW()' })
+  createdAt: Date;
+
+  @Column({ type: 'timestamp', default: () => 'NOW()', onUpdate: 'NOW()' })
+  updatedAt: Date;
 }

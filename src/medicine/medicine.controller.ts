@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { MedicineService } from './medicine.service';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
 import { User } from 'src/user/entities/user.entity';
-import { CreateMedicineDto } from './dto/create-medicine.dto';
+import { MedicineDto } from './dto/medicine.dto';
 
 @Controller('medicine')
 export class MedicineController {
@@ -22,9 +22,29 @@ export class MedicineController {
   @UseGuards(AuthGuard("jwt"))
   @Post()
   createMedicine(
-    @Body() createMedicineDto:CreateMedicineDto,
+    @Body() createMedicineDto:MedicineDto,
     @Req() req:Request
   ) {
     return this.medicineService.createMedicine(createMedicineDto,req.user as User);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Put(":id")
+  updateMedicine(
+    @Param("id") id:string,
+    @Body() medicineDto:MedicineDto,
+    @Req() req:Request
+  ) {
+    return this.medicineService.updateMedicine(medicineDto,id,req.user as User);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Patch("incrementQty/:id")
+  incrementMedicine(
+    @Param("id") id:string,
+    @Body("packSize") packSize:number,
+    @Req() req:Request
+  ) {
+    return this.medicineService.incrementMedicine(id,packSize,req.user as User);
   }
 }

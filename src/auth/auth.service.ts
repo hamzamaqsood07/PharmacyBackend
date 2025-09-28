@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { SignUpUserDto } from './dto/signup-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User} from 'src/user/entities/user.entity';
@@ -37,11 +37,11 @@ export class AuthService {
   async loginUser(loginUserDto:LoginUserDto){
     const user = await this.userRepository.findOneBy({email:loginUserDto.email});
     if(!user){
-      throw new Error('Invalid email or password');
+      throw new BadRequestException('Invalid email or password');
     }
     const isValidPassword = await bcrypt.compare(loginUserDto.password,user.password)
     if(!isValidPassword){
-      throw new Error('Invalid email or password');
+      throw new BadRequestException('Invalid email or password');
     }
 
     return this.jwtService.sign({ sub:user.id });

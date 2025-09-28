@@ -9,6 +9,6 @@ export class SignUpGuard implements CanActivate{
     ): boolean | Promise<boolean> | Observable<boolean> {
         const request = context.switchToHttp().getRequest()
         const token = request.headers["authorization"]
-        return token === `Bearer ${process.env.SIGNUPTOKEN}`
+        return token === `Bearer ${process.env.SIGNUP_TOKEN}`
     }
 } 

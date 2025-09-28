@@ -29,7 +29,7 @@ export class User {
     @OneToOne(()=>Invoice)
     activeInvoice:Invoice
 
-    @ManyToOne(()=>Organization,(organization)=>organization.users,{cascade:true,onDelete:"CASCADE"})
+    @ManyToOne(()=>Organization,(organization)=>organization.users,{onDelete:"CASCADE"})
     organization:Organization
 
 } 

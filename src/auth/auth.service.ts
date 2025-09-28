@@ -22,18 +22,18 @@ export class AuthService {
     if(user){
       throw new ConflictException('User already exists');
     }
+    let organization = await this.orgRepository.findOneBy({orgTitle:signUpUserDto.orgTitle})
+    
+    if(!organization){
     const org =  this.orgRepository.create({orgTitle:signUpUserDto.orgTitle})
-    const savedOrg = await this.orgRepository.save(org)
-    if(!savedOrg) throw new Error("Failed to create Organization")
+    organization = await this.orgRepository.save(org)
+    }
         
     const password = signUpUserDto.password
     const hashedPassword = await bcrypt.hash(password,10) ;
-    const newUser = this.userRepository.create({...signUpUserDto, password:hashedPassword,organization:org});
-
-    const savedUser = await this.userRepository.save(newUser);
-    if(!savedUser){
-      throw new Error('Failed to create user');
-    }
+    const newUser = this.userRepository.create({...signUpUserDto, password:hashedPassword,organization});
+    await this.userRepository.save(newUser);
+    
     const payload = { sub:newUser.id }
     return this.jwtService.signAsync(payload);
   }

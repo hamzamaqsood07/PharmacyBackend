@@ -28,6 +28,6 @@ export class Medicine {
     @Column({type:'timestamp',default:()=>"NOW()",onUpdate:"NOW()"})
     updatedAt:Date
 
-    @ManyToOne(()=>Organization,{cascade:true,onDelete:"CASCADE"})
+    @ManyToOne(()=>Organization,{onDelete:"CASCADE"})
     organization:Organization
 }

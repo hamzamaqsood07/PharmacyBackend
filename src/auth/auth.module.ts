@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { OrganizationModule } from 'src/organization/organization.module';
 import { ConfigModule } from '@nestjs/config';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [ConfigModule.forRoot({isGlobal:true}),
@@ -20,6 +21,6 @@ import { ConfigModule } from '@nestjs/config';
     OrganizationModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService,JwtStrategy],
 })
 export class AuthModule {}

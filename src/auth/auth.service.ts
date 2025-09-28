@@ -22,16 +22,12 @@ export class AuthService {
     if(user){
       throw new ConflictException('User already exists');
     }
-    let organization = await this.orgRepository.findOneBy({orgTitle:signUpUserDto.orgTitle})
-    
-    if(!organization){
     const org =  this.orgRepository.create({orgTitle:signUpUserDto.orgTitle})
-    organization = await this.orgRepository.save(org)
-    }
+    const savedOrg = await this.orgRepository.save(org)
         
     const password = signUpUserDto.password
     const hashedPassword = await bcrypt.hash(password,10) ;
-    const newUser = this.userRepository.create({...signUpUserDto, password:hashedPassword,organization});
+    const newUser = this.userRepository.create({...signUpUserDto, password:hashedPassword,organization:savedOrg});
     await this.userRepository.save(newUser);
     
     const payload = { sub:newUser.id }

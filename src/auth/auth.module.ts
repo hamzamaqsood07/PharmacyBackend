@@ -15,7 +15,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       global: true,
       secret: process.env.JWT_SECRET ,
       signOptions:{
-        expiresIn: '1h'
+        expiresIn: '1y'
       }
     })),
     OrganizationModule,

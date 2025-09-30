@@ -42,9 +42,9 @@ export class MedicineController {
   @Patch("incrementQty/:id")
   incrementMedicine(
     @Param("id") id:string,
-    @Body("packSize") packSize:number,
+    @Body("packQty") packQty:number,
     @Req() req:Request
   ) {
-    return this.medicineService.incrementMedicine(id,packSize,req.user as User);
+    return this.medicineService.incrementMedicine(id,packQty,req.user as User);
   }
 }

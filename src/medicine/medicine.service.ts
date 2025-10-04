@@ -4,7 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Medicine } from './entities/medicine.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
-import { MedicineDto } from './dto/medicine.dto';
+import { CreateMedicineDto } from './dto/createMedicine.dto';
+import { UpdateMedicineDto } from './dto/updateMedicine.dto';
 
 @Injectable()
 export class MedicineService {
@@ -29,7 +30,7 @@ export class MedicineService {
     return medicines;
   }
 
-  async createMedicine(createMedicineDto: MedicineDto, reqUser: User) {
+  async createMedicine(createMedicineDto: CreateMedicineDto, reqUser: User) {
     const medicine = this.medicineRepository.create({
       ...createMedicineDto,
       organization: { id: reqUser.organization.id },
@@ -38,10 +39,10 @@ export class MedicineService {
     const savedMedicine = await this.medicineRepository.save(medicine);
     return {
       messge: `Medicine ${savedMedicine.name} has been saved successfully`,
-    };
+    }; 
   }
 
-  async updateMedicine(medicineDto: MedicineDto, id: string, reqUser: User) {
+  async updateMedicine(updateMedicineDto: UpdateMedicineDto, id: string, reqUser: User) {
     const medicine = await this.medicineRepository.findOneBy({
       id,
       organization: { id: reqUser.organization.id },
@@ -49,7 +50,7 @@ export class MedicineService {
     if (!medicine)
       throw new NotFoundException(`Medicine with ID ${id} not found`);
 
-    Object.assign(medicine, medicineDto);
+    Object.assign(medicine, updateMedicineDto);
     await this.medicineRepository.save(medicine);
     return { message: `Medicine updated Successfully` };
   }

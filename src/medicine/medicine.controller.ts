@@ -4,7 +4,8 @@ import { MedicineService } from './medicine.service';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
 import { User } from 'src/user/entities/user.entity';
-import { MedicineDto } from './dto/medicine.dto';
+import { CreateMedicineDto } from './dto/createMedicine.dto';
+import { UpdateMedicineDto } from './dto/updateMedicine.dto';
 
 @Controller('medicine')
 export class MedicineController {
@@ -22,7 +23,7 @@ export class MedicineController {
   @UseGuards(AuthGuard("jwt"))
   @Post()
   createMedicine(
-    @Body() createMedicineDto:MedicineDto,
+    @Body() createMedicineDto:CreateMedicineDto,
     @Req() req:Request
   ) {
     return this.medicineService.createMedicine(createMedicineDto,req.user as User);
@@ -32,10 +33,10 @@ export class MedicineController {
   @Put(":id")
   updateMedicine(
     @Param("id") id:string,
-    @Body() medicineDto:MedicineDto,
+    @Body() updateMedicineDto:UpdateMedicineDto,
     @Req() req:Request
   ) {
-    return this.medicineService.updateMedicine(medicineDto,id,req.user as User);
+    return this.medicineService.updateMedicine(updateMedicineDto,id,req.user as User);
   }
 
   @UseGuards(AuthGuard("jwt"))

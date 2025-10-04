@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { IsNumber, IsString } from "class-validator"
 
-export class MedicineDto {
+export class CreateMedicineDto {
     @IsString()
     name:string
 
@@ -13,4 +13,7 @@ export class MedicineDto {
 
     @IsNumber()
     packSize:number
+
+    @IsNumber()
+    qty:number
 }

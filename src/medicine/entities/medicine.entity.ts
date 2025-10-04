@@ -13,10 +13,16 @@ export class Medicine {
     @Column({default:0})
     qty:number
 
-    @Column()
+    @Column('decimal', { precision: 10, scale: 2, default: 0 ,transformer: {
+  to: (value: number) => value,  // when saving
+  from: (value: string) => parseFloat(value), // when reading
+}})
     salesPrice:number
 
-    @Column()
+    @Column('decimal', { precision: 10, scale: 2, default: 0 ,transformer: {
+  to: (value: number) => value,  // when saving
+  from: (value: string) => parseFloat(value), // when reading
+}})
     purchasePrice:number
 
     @Column()

@@ -133,78 +133,72 @@ export class InvoiceService {
     return { updatedInvoice };
   }
 
-  async finalizeInvoice(
-    user: User,
-    cashPaid: number,
-    discountedPercentage = 0,
-  ) {
-    const invoice = await this.getCurrentInvoice(user);
-    if (!invoice) throw new NotFoundException('No active invoice');
+    async finalizeInvoice(
+      user: User,
+      cashPaid: number,
+      discountedPercentage = 0,
+    ) {
+      const invoice = await this.getCurrentInvoice(user);
+      if (!invoice) throw new NotFoundException('No active invoice');
 
-    // Load items for discount & stock calculations
-    const items = await this.invoiceMedicineRepo.find({
-      where: { invoiceId: invoice.id },
-      relations: ['medicine'],
-    });
+      // Load items for discount & stock calculations
+      const items = await this.invoiceMedicineRepo.find({
+        where: { invoiceId: invoice.id },
+        relations: ['medicine'],
+      });
 
-    // Recalculate gross total from items
-    const grossTotal = items.reduce(
-      (sum, item) => sum + item.salesPrice * item.qty,
-      0,
-    );
-
-    // Calculate discount
-    const discountAmount = (grossTotal * discountedPercentage) / 100;
-    const netTotal = grossTotal - discountAmount;
-
-    // Calculate total cost to ensure profit isn't negative
-    const totalCost = items.reduce(
-      (sum, item) => sum + item.purchasePrice * item.qty,
-      0,
-    );
-    if (cashPaid < netTotal) {
-      throw new BadRequestException(
-        `Cash paid (${cashPaid}) must be at least equal to net total (${netTotal}).`,
+      // Recalculate gross total from items
+      const grossTotal = items.reduce(
+        (sum, item) => sum + item.salesPrice * item.qty,
+        0,
       );
-    }
 
-    const profitAfterDiscount = netTotal - totalCost;
-    console.log({ profitAfterDiscount, netTotal, totalCost });
-    if (profitAfterDiscount <= 0) {
-      throw new BadRequestException(
-        `Discount too high. It would make your profit zero or negative.`,
+      // Calculate discount
+      const discountAmount = (grossTotal * discountedPercentage) / 100;
+      const netTotal = grossTotal - discountAmount;
+
+      // Calculate total cost to ensure profit isn't negative
+      const totalCost = items.reduce(
+        (sum, item) => sum + item.purchasePrice * item.qty,
+        0,
       );
+      if (cashPaid < netTotal) {
+        throw new BadRequestException(
+          `Cash paid (${cashPaid}) must be at least equal to net total (${netTotal}).`,
+        );
+      }
+
+      const profitAfterDiscount = netTotal - totalCost;
+      if (profitAfterDiscount <= 0) {
+        throw new BadRequestException(
+          `Discount too high. It would make your profit zero or negative.`,
+        );
+      }
+
+      // Save invoice
+      invoice.grossTotal = grossTotal;
+      invoice.discount = discountAmount;
+      invoice.netTotal = netTotal;
+      invoice.cashPaid = cashPaid;
+      invoice.balance = netTotal - cashPaid;
+      invoice.status = InvoiceStatus.COMPLETED;
+
+      const updatedInvoice = await this.invoiceRepo.save(invoice);
+
+      // Deduct medicine stock
+      for (const item of items) {
+        await this.medicineRepo.decrement(
+          { id: item.medicineId },
+          'qty',
+          item.qty,
+        );
+      }
+
+      // Clear user's active invoice
+      await this.userRepo.save({ id: user.id, activeInvoice: null });
+
+      return { message: 'Invoice finalized', updatedInvoice };
     }
-
-    // Save invoice
-    console.log({
-      grossTotal,
-      discountPercentage: discountedPercentage,
-      discountAmount,
-    });
-    invoice.grossTotal = grossTotal;
-    invoice.discount = discountAmount;
-    invoice.netTotal = netTotal;
-    invoice.cashPaid = cashPaid;
-    invoice.balance = netTotal - cashPaid;
-    invoice.status = InvoiceStatus.COMPLETED;
-
-    const updatedInvoice = await this.invoiceRepo.save(invoice);
-
-    // Deduct medicine stock
-    for (const item of items) {
-      await this.medicineRepo.decrement(
-        { id: item.medicineId },
-        'qty',
-        item.qty,
-      );
-    }
-
-    // Clear user's active invoice
-    await this.userRepo.save({ id: user.id, activeInvoice: null });
-
-    return { message: 'Invoice finalized', updatedInvoice };
-  }
 
   async getAllInvoices(user: User) {
     return this.invoiceRepo.find({

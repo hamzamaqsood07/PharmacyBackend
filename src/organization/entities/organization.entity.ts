@@ -9,6 +9,21 @@ export class Organization {
 
     @Column()
     orgTitle:string
+
+    @Column({ nullable: true })
+    description:string
+
+    @Column({ nullable: true })
+    address:string
+
+    @Column({ nullable: true })
+    phone:string
+
+    @Column({ nullable: true })
+    email:string
+
+    @Column({ nullable: true })
+    logoUrl?:string
  
     @Column({type:"timestamp",default:()=>"NOW()"})
     createdAt:Date

@@ -65,8 +65,8 @@ export class InvoiceService {
         invoiceId: invoice.id,
         medicineId,
         qty,
-        salesPrice: medicine.salesPrice,
-        purchasePrice: medicine.purchasePrice,
+        salesPrice: medicine.salesPrice/medicine.packSize,
+        purchasePrice: medicine.purchasePrice/medicine.packSize,
       });
     }
 

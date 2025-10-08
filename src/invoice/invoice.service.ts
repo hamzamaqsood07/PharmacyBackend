@@ -202,9 +202,9 @@ export class InvoiceService {
 
   async getAllInvoices(user: User) {
     return this.invoiceRepo.find({
-      where: { organization: { id: user.organization.id } },
+      where: { organization: { id: user.organization.id } ,status: InvoiceStatus.COMPLETED},
       order: { createdAt: 'DESC' },
-      relations: ['invoiceMedicines', 'invoiceMedicines.medicine'],
+      relations: ['invoiceMedicines', 'invoiceMedicines.medicine','user'],
     });
   }
 

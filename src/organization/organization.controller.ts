@@ -29,8 +29,7 @@ export class OrganizationController {
     if (!file) {
       throw new Error('No file uploaded');
     }
-    const logoUrl = `/uploads/logos/${file.filename}`;
-    return this.organizationService.uploadLogo(req.user as User, logoUrl);
+    return this.organizationService.uploadLogo(req.user as User, file);
   }
 
   @Delete('logo')

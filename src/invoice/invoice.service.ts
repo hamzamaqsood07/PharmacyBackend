@@ -137,6 +137,7 @@ export class InvoiceService {
       user: User,
       cashPaid: number,
       discountedPercentage = 0,
+      customerName?:string,
     ) {
       const invoice = await this.getCurrentInvoice(user);
       if (!invoice) throw new NotFoundException('No active invoice');
@@ -181,6 +182,7 @@ export class InvoiceService {
       invoice.netTotal = netTotal;
       invoice.cashPaid = cashPaid;
       invoice.balance = netTotal - cashPaid;
+      invoice.customer = customerName || null
       invoice.status = InvoiceStatus.COMPLETED;
 
       const updatedInvoice = await this.invoiceRepo.save(invoice);

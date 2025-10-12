@@ -26,7 +26,10 @@ export class Organization {
   logoUrl?: string;
 
   @Column({ nullable: true }) 
-  themeColor: string;
+  primaryColor: string;
+
+  @Column({ nullable: true }) 
+  secondaryColor: string;
 
   @Column({ type: 'timestamp', default: () => 'NOW()' })
   createdAt: Date;

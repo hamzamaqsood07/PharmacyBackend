@@ -22,13 +22,13 @@ export class Organization {
   @Column({ nullable: true })
   email: string;
 
-  @Column({ nullable: true })
-  logoUrl?: string;
+  @Column({ type: 'varchar', nullable: true })
+  logoUrl: string | null;
 
-  @Column({ nullable: true }) 
+  @Column({ nullable: true })
   primaryColor: string;
 
-  @Column({ nullable: true }) 
+  @Column({ nullable: true })
   secondaryColor: string;
 
   @Column({ type: 'timestamp', default: () => 'NOW()' })

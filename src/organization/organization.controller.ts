@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Get, Patch, Post, Delete, Body, Req, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
@@ -28,8 +29,7 @@ export class OrganizationController {
     if (!file) {
       throw new Error('No file uploaded');
     }
-    const logoUrl = `/uploads/logos/${file.filename}`;
-    return this.organizationService.uploadLogo(req.user as User, logoUrl);
+    return this.organizationService.uploadLogo(req.user as User, file);
   }
 
   @Delete('logo')

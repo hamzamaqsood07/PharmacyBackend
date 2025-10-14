@@ -58,12 +58,13 @@ export class InvoiceController {
   @Post('finalize')
   finalizeInvoice(
     @Req() req: Request,
-    @Body() body: { cashPaid: number; discountedPercentage: number },
+    @Body() body: { cashPaid: number; discountedPercentage: number,customerName?:string},
   ) {
     return this.invoiceService.finalizeInvoice(
       req.user as User,
       body.cashPaid,
       body.discountedPercentage,
+      body.customerName
     );
   }
 

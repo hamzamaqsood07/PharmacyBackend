@@ -31,8 +31,10 @@ export class MedicineService {
   }
 
   async createMedicine(createMedicineDto: CreateMedicineDto, reqUser: User) {
+    const qty = createMedicineDto.qty*createMedicineDto.packSize;
     const medicine = this.medicineRepository.create({
       ...createMedicineDto,
+      qty,
       organization: { id: reqUser.organization.id },
     });
 

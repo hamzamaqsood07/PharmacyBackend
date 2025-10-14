@@ -20,10 +20,18 @@ export class Invoice {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0,transformer: {
-  to: (value: number) => value,  // when saving
-  from: (value: string) => parseFloat(value), // when reading
-} })
+  @Column({ type: 'int', unique: true })
+  invoiceNumber: number;
+
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: {
+      to: (value: number) => value, // when saving
+      from: (value: string) => parseFloat(value), // when reading
+    },
+  })
   discount: number;
 
   @Column({
@@ -33,28 +41,50 @@ export class Invoice {
   })
   status: InvoiceStatus;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0 ,transformer: {
-  to: (value: number) => value,  // when saving
-  from: (value: string) => parseFloat(value), // when reading
-}})
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: {
+      to: (value: number) => value, // when saving
+      from: (value: string) => parseFloat(value), // when reading
+    },
+  })
   grossTotal: number;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0,transformer: {
-  to: (value: number) => value,  // when saving
-  from: (value: string) => parseFloat(value), // when reading
-} })
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: {
+      to: (value: number) => value, // when saving
+      from: (value: string) => parseFloat(value), // when reading
+    },
+  })
   netTotal: number;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0,nullable:true ,transformer: {
-  to: (value: number) => value,  // when saving
-  from: (value: string) => parseFloat(value), // when reading
-}})
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    default: 0,
+    nullable: true,
+    transformer: {
+      to: (value: number) => value, // when saving
+      from: (value: string) => parseFloat(value), // when reading
+    },
+  })
   cashPaid: number;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0 ,nullable:true,transformer: {
-  to: (value: number) => value,  // when saving
-  from: (value: string) => parseFloat(value), // when reading
-}})
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    default: 0,
+    nullable: true,
+    transformer: {
+      to: (value: number) => value, // when saving
+      from: (value: string) => parseFloat(value), // when reading
+    },
+  })
   balance: number;
 
   @Column({ type: 'timestamp', default: () => 'NOW()' })
@@ -62,6 +92,9 @@ export class Invoice {
 
   @Column({ type: 'timestamp', default: () => 'NOW()', onUpdate: 'NOW()' })
   updatedAt: Date;
+
+  @Column({ type: 'varchar', nullable: true })
+  customer: string | null;
 
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   user: User;

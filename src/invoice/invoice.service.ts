@@ -27,15 +27,34 @@ export class InvoiceService {
 
     // If no active invoice, create one
     if (!invoice) {
+      const lastInvoice = await this.invoiceRepo.findOne({
+        where: { organization: { id: user.organization.id } },
+        order: { createdAt: 'DESC' },
+      });
+      console.log(lastInvoice)
+      // Step 2: Determine next invoice number
+      let nextNumber = 1;
+      if (lastInvoice && lastInvoice.invoiceNumber) {
+        nextNumber = lastInvoice.invoiceNumber + 1;
+      }
+
+      // Step 3: Format number (0001, 0002, etc.)
+      const formattedNumber = nextNumber.toString().padStart(6, '0');
+      console.log(formattedNumber)
+
+      // Step 4: Create invoice with in
       invoice = this.invoiceRepo.create({
         discount: 0,
         grossTotal: 0,
         netTotal: 0,
         organization: user.organization,
         user,
+        invoiceNumber:parseInt(formattedNumber)
       });
-      await this.invoiceRepo.save(invoice);
+      const a = await this.invoiceRepo.save(invoice);
+      console.log(a)
       await this.userRepo.save({ id: user.id, activeInvoice: invoice });
+      console.log("object")
     }
 
     const medicine = await this.medicineRepo.findOne({
@@ -65,8 +84,8 @@ export class InvoiceService {
         invoiceId: invoice.id,
         medicineId,
         qty,
-        salesPrice: medicine.salesPrice/medicine.packSize,
-        purchasePrice: medicine.purchasePrice/medicine.packSize,
+        salesPrice: medicine.salesPrice / medicine.packSize,
+        purchasePrice: medicine.purchasePrice / medicine.packSize,
       });
     }
 
@@ -133,80 +152,83 @@ export class InvoiceService {
     return { updatedInvoice };
   }
 
-    async finalizeInvoice(
-      user: User,
-      cashPaid: number,
-      discountedPercentage = 0,
-      customerName?:string,
-    ) {
-      const invoice = await this.getCurrentInvoice(user);
-      if (!invoice) throw new NotFoundException('No active invoice');
+  async finalizeInvoice(
+    user: User,
+    cashPaid: number,
+    discountedPercentage = 0,
+    customerName?: string,
+  ) {
+    const invoice = await this.getCurrentInvoice(user);
+    if (!invoice) throw new NotFoundException('No active invoice');
 
-      // Load items for discount & stock calculations
-      const items = await this.invoiceMedicineRepo.find({
-        where: { invoiceId: invoice.id },
-        relations: ['medicine'],
-      });
+    // Load items for discount & stock calculations
+    const items = await this.invoiceMedicineRepo.find({
+      where: { invoiceId: invoice.id },
+      relations: ['medicine'],
+    });
 
-      // Recalculate gross total from items
-      const grossTotal = items.reduce(
-        (sum, item) => sum + item.salesPrice * item.qty,
-        0,
+    // Recalculate gross total from items
+    const grossTotal = items.reduce(
+      (sum, item) => sum + item.salesPrice * item.qty,
+      0,
+    );
+
+    // Calculate discount
+    const discountAmount = (grossTotal * discountedPercentage) / 100;
+    const netTotal = grossTotal - discountAmount;
+
+    // Calculate total cost to ensure profit isn't negative
+    const totalCost = items.reduce(
+      (sum, item) => sum + item.purchasePrice * item.qty,
+      0,
+    );
+    if (cashPaid < netTotal) {
+      throw new BadRequestException(
+        `Cash paid (${cashPaid}) must be at least equal to net total (${netTotal}).`,
       );
-
-      // Calculate discount
-      const discountAmount = (grossTotal * discountedPercentage) / 100;
-      const netTotal = grossTotal - discountAmount;
-
-      // Calculate total cost to ensure profit isn't negative
-      const totalCost = items.reduce(
-        (sum, item) => sum + item.purchasePrice * item.qty,
-        0,
-      );
-      if (cashPaid < netTotal) {
-        throw new BadRequestException(
-          `Cash paid (${cashPaid}) must be at least equal to net total (${netTotal}).`,
-        );
-      }
-
-      const profitAfterDiscount = netTotal - totalCost;
-      if (profitAfterDiscount <= 0) {
-        throw new BadRequestException(
-          `Discount too high. It would make your profit zero or negative.`,
-        );
-      }
-
-      // Save invoice
-      invoice.grossTotal = grossTotal;
-      invoice.discount = discountAmount;
-      invoice.netTotal = netTotal;
-      invoice.cashPaid = cashPaid;
-      invoice.balance = netTotal - cashPaid;
-      invoice.customer = customerName || null
-      invoice.status = InvoiceStatus.COMPLETED;
-
-      const updatedInvoice = await this.invoiceRepo.save(invoice);
-
-      // Deduct medicine stock
-      for (const item of items) {
-        await this.medicineRepo.decrement(
-          { id: item.medicineId },
-          'qty',
-          item.qty,
-        );
-      }
-
-      // Clear user's active invoice
-      await this.userRepo.save({ id: user.id, activeInvoice: null });
-
-      return { message: 'Invoice finalized', updatedInvoice };
     }
+
+    const profitAfterDiscount = netTotal - totalCost;
+    if (profitAfterDiscount <= 0) {
+      throw new BadRequestException(
+        `Discount too high. It would make your profit zero or negative.`,
+      );
+    }
+
+    // Save invoice
+    invoice.grossTotal = grossTotal;
+    invoice.discount = discountAmount;
+    invoice.netTotal = netTotal;
+    invoice.cashPaid = cashPaid;
+    invoice.balance = netTotal - cashPaid;
+    invoice.customer = customerName || null;
+    invoice.status = InvoiceStatus.COMPLETED;
+
+    const updatedInvoice = await this.invoiceRepo.save(invoice);
+
+    // Deduct medicine stock
+    for (const item of items) {
+      await this.medicineRepo.decrement(
+        { id: item.medicineId },
+        'qty',
+        item.qty,
+      );
+    }
+
+    // Clear user's active invoice
+    await this.userRepo.save({ id: user.id, activeInvoice: null });
+
+    return { message: 'Invoice finalized', updatedInvoice };
+  }
 
   async getAllInvoices(user: User) {
     return this.invoiceRepo.find({
-      where: { organization: { id: user.organization.id } ,status: InvoiceStatus.COMPLETED},
+      where: {
+        organization: { id: user.organization.id },
+        status: InvoiceStatus.COMPLETED,
+      },
       order: { createdAt: 'DESC' },
-      relations: ['invoiceMedicines', 'invoiceMedicines.medicine','user'],
+      relations: ['invoiceMedicines', 'invoiceMedicines.medicine', 'user'],
     });
   }
 
